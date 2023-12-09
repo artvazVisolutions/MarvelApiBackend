@@ -5,6 +5,7 @@ import com.marvel.api.Dto.Character.ResponseCharacter;
 import com.marvel.api.Dto.Character.ResponseCharacterShort;
 import com.marvel.api.models.Character;
 import com.marvel.api.service.CharactersService;
+import com.marvel.api.utilities.CustomException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -49,18 +50,21 @@ public class CharactersServiceImpl implements CharactersService {
     }
 
     @Override
-    public ResponseCharacterShort getCharacterById(Integer id) {
+    public ResponseCharacterShort getCharacterById(Integer id) throws CustomException{
         String hash = getMD5(timestamp+privateKey+publicKey);
         String url = String.format("%s/%s?ts=%s&apikey=%s&hash=%s",apiUrl,id,timestamp,publicKey,hash);
-        ResponseEntity<ResponseCharacter> res = restTemplate.getForEntity(url, ResponseCharacter.class);
-        DtoResponseCharacter character = Objects.requireNonNull(res.getBody()).getData();
-
-        ResponseCharacterShort response = null;
-        if(res.getStatusCode().is2xxSuccessful()) {
-            for (Character item : character.getResults()) {
-                response = new ResponseCharacterShort(item.getId(), item.getName(), item.getDescription());
+        try{
+            ResponseEntity<ResponseCharacter> res = restTemplate.getForEntity(url, ResponseCharacter.class);
+            DtoResponseCharacter character = Objects.requireNonNull(res.getBody()).getData();
+            ResponseCharacterShort response = null;
+            if(res.getStatusCode().is2xxSuccessful()) {
+                for (Character item : character.getResults()) {
+                    response = new ResponseCharacterShort(item.getId(), item.getName(), item.getDescription());
+                }
             }
+            return response;
+        }catch (Exception e){
+            throw new CustomException(e.getMessage());
         }
-        return response;
     }
 }
