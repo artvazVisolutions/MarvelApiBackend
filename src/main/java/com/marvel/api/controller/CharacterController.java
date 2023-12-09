@@ -34,7 +34,7 @@ public class CharacterController {
     public ResponseEntity<?> getCharacterById(@PathVariable Integer id) throws CustomException {
         try {
             return new ResponseEntity<ResponseCharacterShort>(service.getCharacterById(id), HttpStatus.OK);
-        }catch (Exception e){
+        }catch (CustomException e){
             return new ResponseEntity<>(e.getMessage(),HttpStatus.NO_CONTENT);
         }
     }
